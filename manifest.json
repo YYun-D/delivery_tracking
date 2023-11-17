@@ -1,11 +1,11 @@
 {
     "manifest_version": 3,
-    "name": "통관 배송 조회",
+    "name": "배송 통관 조회",
   "version": "0.1",
   "host_permissions": [
     "https://unipass.customs.go.kr/*"
   ],
-  "description": "통관과 배송조회가 가능합니다.",
+  "description": "배송과 통관조회가 가능합니다.",
     "action": {
       "default_popup": "popup.html",
       "default_icon": {
