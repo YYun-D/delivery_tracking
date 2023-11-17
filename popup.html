@@ -1,0 +1,31 @@
+<meta charset="utf-8">
+<!DOCTYPE html>
+<html style="height: 190px;">
+  <style>
+    .title { font-weight : bold; font-size: 18px;  margin-bottom:10px; }
+    textarea { resize: none; margin-right: 10px; font-size: 16px; border-radius:4px; }
+    button { font-weight : bold; width: 50px; border-radius:10px; border:none; background-color: rgb(210, 210, 210);}
+    button:hover {background-color: rgb(187, 187, 187);}
+  </style>
+<body>
+  <p class="title">배송 조회</p>
+  <select id="택배회사">
+    <option>CJ대한통운</option>
+    <option>우체국택배</option>
+    <option>롯데택배</option>
+    <option>한진택배</option>
+    <option>로젠택배</option>
+  </select>
+  <div style="display: flex; height: 25px; margin-top: 10px;">
+    <textarea id="송장번호" placeholder="송장번호"></textarea>
+    <button id="배송조회">조회</button>
+  </div>
+  <p class="title">통관 조회</p>
+  <div style="display: flex; height: 25px">
+    <textarea id="통관번호" placeholder="송장번호"></textarea>
+    <button id="통관조회">조회</button>
+  </div>
+  <div id="result"></div>
+  <script src="popup.js"></script>
+</body>
+</html>
