@@ -6,13 +6,13 @@ deliveryButton.addEventListener('click', () => {
   var deliveryCompany = document.getElementById('택배회사');
   switch (deliveryCompany.value){
   case 'CJ대한통운':
-    chrome.windows.create({url: `http://www.doortodoor.co.kr/parcel/doortodoor.do?fsp_action=PARC_ACT_002&fsp_cmd=retrieveInvNoACT&invc_no=${deliveryNum.value}`, type: "normal"});
+    CJTracker(deliveryNum.value);
     break;
   case '우체국택배':
-    chrome.windows.create({url: `https://service.epost.go.kr/trace.RetrieveDomRigiTraceList.comm?sid1=${deliveryNum.value}&displayHeader=N`, type: "normal"});
+    PostTracker(deliveryNum.value);
     break;
   case '롯데택배':
-    chrome.windows.create({url: `https://www.lotteglogis.com/home/reservation/tracking/linkView?InvNo=${deliveryNum.value}`, type: "normal"});
+    LTTracker(deliveryNum.value);
     break;
   case '한진택배':
     chrome.windows.create({url: `https://www.hanjin.co.kr/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&schLang=KR&wblnumText2=${deliveryNum.value}`, type: "normal"});
@@ -26,7 +26,8 @@ deliveryButton.addEventListener('click', () => {
 customsclearanceButton.addEventListener('click', async() => {
   var customsclearanceNum = document.getElementById('통관번호');
   var data;
-  await fetch(`https://unipass.customs.go.kr:38010/ext/rest/cargCsclPrgsInfoQry/retrieveCargCsclPrgsInfo?crkyCn=p280x223n171w176d030u060y0&hblNo=${customsclearanceNum.value}&blYy=${new Date().getFullYear()}`, {method: 'GET'})
+  await fetch(`https://unipass.customs.go.kr:38010/ext/rest/cargCsclPrgsInfoQry/retrieveCargCsclPrgsInfo?crkyCn=p280x223n171w176d030u060y0&hblNo=${customsclearanceNum.value}&blYy=${new Date().getFullYear()}`,
+  {method: 'GET'})
   .then(response => response.text())
   .then(result => data = result)
   .catch(error => alert('error', error));
@@ -56,6 +57,96 @@ customsclearanceButton.addEventListener('click', async() => {
     result.innerHTML=html;
   }
 });
+
+function CJTracker (deliverynum) {
+  const url = 'https://trace.cjlogistics.com/next/rest/selectTrackingDetailList.do';
+  const urlencoded = new URLSearchParams();
+  urlencoded.append("wblNo", "583887952876");
+  fetch(url, {
+    method: 'POST',
+    body: urlencoded,
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    }
+  })
+  .then(response => {
+    if (response.ok) {
+      return response.json();
+    } else {
+      console.error('Request failed with status code:', response.status);
+    }
+  })
+  .then(data => {
+    const svcOutList = data.data.svcOutList;
+    let result = document.getElementById('result');
+    let html = ``;
+
+    if (svcOutList.length!=0) {
+      for (let i=svcOutList.length-1; i>=0; i--) {
+        html+=`
+        <p style="margin-bottom:0px">${svcOutList[i].workDt} ${svcOutList[i].workHms}</p>
+        <p style="margin-top:0px; font-weight : bold;">${svcOutList[i].crgStDnm}</p>
+        `;
+      }
+    }
+
+    result.innerHTML=html;
+  })
+  .catch(error => {
+    console.error('Request failed:', error);
+  });
+}
+
+function PostTracker (deliveryNum) {
+  fetch(`https://service.epost.go.kr/trace.RetrieveDomRigiTraceList.comm?sid1=${deliveryNum}&displayHeader=N`, {method: 'GET'})
+  .then((response) => response.text())
+  .then((result) => 
+  {
+    const parser = new DOMParser();
+    const htmlDoc = parser.parseFromString(result, 'text/html');
+    const tr = htmlDoc.querySelectorAll('tr');
+
+    let resultoutput = document.getElementById('result');
+    let html = ``;
+
+
+    for (var i=tr.length-1; i>3; i--){
+      const td = tr[i].querySelectorAll('td');
+      html+=`
+        <p style="margin-bottom:0px">${td[0].textContent} ${td[1].textContent}</p>
+        <p style="margin-top:0px; font-weight : bold;">${td[3].textContent}</p>
+        `;
+    }
+
+    resultoutput.innerHTML=html;
+  })
+  .catch((error) => console.error(error));
+}
+
+function LTTracker (deliverynum) {
+  fetch(`https://www.lotteglogis.com/home/reservation/tracking/linkView?InvNo=${deliverynum}`, {method: 'GET'})
+  .then((response) => response.text())
+  .then((result) => 
+  {
+    const parser = new DOMParser();
+    const htmlDoc = parser.parseFromString(result, 'text/html');
+    const tbody = htmlDoc.querySelectorAll('tbody');
+    const rows = tbody[1].querySelectorAll('tr');
+
+    let resultoutput = document.getElementById('result');
+    let html = ``;
+
+    for (var i=0; i< rows.length; i++){
+      const data = rows[i].querySelectorAll('td');
+      html+=`
+        <p style="margin-bottom:0px">${data[1].textContent}</p>
+        <p style="margin-top:0px; font-weight : bold;">${data[0].textContent}</p>
+        `;
+    }
+    resultoutput.innerHTML=html;
+  })
+  .catch((error) => console.error(error));
+}
 
 function changedate(date) {
 
